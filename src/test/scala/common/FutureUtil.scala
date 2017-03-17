@@ -13,7 +13,7 @@ object FutureUtil {
   def messageInFuture(message:String): Future[String] = {
     Future {
       Thread.sleep(1000)
-      s"message in future : ${message}"
+      message
     }
   }
 }

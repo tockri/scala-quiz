@@ -1,12 +1,12 @@
 package question.chapter1
 
-import org.scalatest.{FlatSpec, MustMatchers}
+import org.scalatest.{DiagrammedAssertions, FlatSpec, MustMatchers}
 
 /**
   * ListとOptionの練習
-  *
+  * 問題
   */
-abstract class Q1_List_Option extends FlatSpec with MustMatchers {
+abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
 
   /**
     * Listを反転させるreverseを、List#reverseを使わず、foldLeftを使って作りましょう
@@ -42,9 +42,9 @@ abstract class Q1_List_Option extends FlatSpec with MustMatchers {
 
   "countSome" should "count Some(_)" in {
     assert(countSome(List(Some("a"), Some("b"), None, None, Some("c"))) == 3)
-    countSome(List()) mustBe 0
-    countSome(List(Some(1))) mustBe 1
-    countSome(List(None, None, None)) mustBe 0
+    assert(countSome(List()) == 0)
+    assert(countSome(List(Some(1))) == 1)
+    assert(countSome(List(None, None, None)) == 0)
   }
 
 
