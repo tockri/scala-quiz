@@ -10,9 +10,9 @@ object FutureUtil {
   /**
     * get message in future
     */
-  def messageInFuture(message:String): Future[String] = {
+  def messageInFuture(message:String, sleepMs:Int = 1000): Future[String] = {
     Future {
-      Thread.sleep(1000)
+      Thread.sleep(sleepMs)
       message
     }
   }
