@@ -11,7 +11,7 @@ import scala.concurrent.{Await, Future}
   */
 class A2_List_Future extends Q2_List_Future {
 
-  override def sequencial[A, B, C](func1: (A) => Future[B], func2: (B) => Future[C]) =
+  override def sequential[A, B, C](func1: (A) => Future[B], func2: (B) => Future[C]) =
     a => func1(a).flatMap(func2)
   /* for文を使うとこうなります（flatMapの糖衣構文なんだけど却って長くなる）
     a =>
@@ -22,13 +22,9 @@ class A2_List_Future extends Q2_List_Future {
     */
 
 
-  override def sequencial2[A, B](funcs: List[(A) => Future[B]]) = {args:List[A] =>
-    if (funcs.length > args.length) {
-      throw new IllegalArgumentException("funcs.length > args.length.")
-    }
-    val argsMap = args.zipWithIndex
-    Future(funcs.zipWithIndex.map{case (func, idx) =>
-      Await.result(func(argsMap(idx)._1), Duration.Inf)
+  override def sequential2[A, B](funcs: List[(A) => Future[B]]) = { args:List[A] =>
+    Future(cross(funcs, args).map{case (func, arg) =>
+      Await.result(func(arg), Duration.Inf)
     })
   }
 
@@ -42,14 +38,20 @@ class A2_List_Future extends Q2_List_Future {
   }
 
   override def parallel2[A, B](funcs: List[(A) => Future[B]]) = { args: List[A] =>
-    if (funcs.length > args.length) {
-      throw new IllegalArgumentException("funcs.length > args.length.")
+    val results = cross(funcs, args).map{case (func, arg) =>
+      func(arg)
     }
-    val argsMap = args.zipWithIndex
-    val results = funcs.zipWithIndex.map { case (f, idx) =>
-      f(argsMap(idx)._1)
+    Future.sequence(results)
+  }
+
+  /**
+    * List２つを組み合わせてTuple2のListにする
+    */
+  private def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)] = {
+    if (aList.length > bList.length) {
+      throw new IllegalArgumentException("aList.length > bList.length")
     }
-    Future(results.map(f => Await.result(f, Duration.Inf)))
+    aList.zipWithIndex.map{case (a, idx) => (a, bList(idx))}
   }
 
 }
