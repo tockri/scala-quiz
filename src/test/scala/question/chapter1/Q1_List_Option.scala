@@ -19,6 +19,26 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
     assert(reverse(List(1)) == List(1))
   }
 
+  /**
+    * 2つのListの要素同士をTupleにしたListを返しましょう
+    */
+  def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)]
+
+  "cross" should "combine 2 lists" in {
+    val a = List(10, 8, 9, 5)
+    val b = List("foo", "bar", "baz", "dab")
+    assert(cross(a, b) == List((10, "foo"), (8, "bar"), (9, "baz"), (5, "dab")))
+
+    val c = List(20, 30, 40, 0)
+    val d = List("Alice", "Bob", "Cris")
+    try {
+      cross(c, d)
+      fail("should fail")
+    } catch {
+      case ex:Exception => {println(ex)}
+    }
+  }
+
 
   /**
     * 要素のOptionのうち、Someのものだけを返すメソッドを作りましょう

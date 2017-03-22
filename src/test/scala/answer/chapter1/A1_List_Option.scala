@@ -13,6 +13,16 @@ class A1_List_Option extends Q1_List_Option {
   override def reverse[A](list: List[A]) = list.foldLeft(List[A]())((l, e) => e :: l)
 
   /**
+    * 2つのListを結合したListを返しましょう
+    */
+  override def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)] = {
+    if (aList.length > bList.length) {
+      throw new IllegalArgumentException("aList.length > bList.length")
+    }
+    aList.zipWithIndex.map{case (a, idx) => (a, bList(idx))}
+  }
+
+  /**
     * 要素のOptionのうち、Someのものだけを返すメソッドを作りましょう
     */
   override def removeOption[A](optList:List[Option[A]]): List[A] = optList.flatMap(oa => oa)
