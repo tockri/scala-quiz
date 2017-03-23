@@ -20,7 +20,7 @@ class A1_List_Option extends Q1_List_Option {
   /**
     * 要素のOptionのうち、Someのものだけを返すメソッドを作りましょう
     */
-  override def removeOption[A](optList:List[Option[A]]): List[A] = optList.flatMap(oa => oa)
+  override def removeOption[A](optList:List[Option[A]]): List[A] = optList.flatten
 
   /**
     * 要素のOptionのうち、Someである要素数を返すメソッドを作りましょう

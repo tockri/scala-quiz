@@ -16,7 +16,7 @@ class A2_List_Future extends Q2_List_Future {
     */
   override def sequential[A, B, C](func1: (A) => Future[B], func2: (B) => Future[C]) =
     a => func1(a).flatMap(func2)
-  /* for文を使うとこうなります（flatMapの糖衣構文なんだけど却って長くなる）
+    /* for文を使うとこうなります（flatMapの糖衣構文なんだけど却って長くなる）
     a =>
     for {
       b1 <- func1(a)
@@ -30,8 +30,17 @@ class A2_List_Future extends Q2_List_Future {
   override def sequential2[A, B](funcs: List[A => Future[B]]) = { (args: List[A]) =>
     funcs.zip(args).foldLeft[Future[List[B]]](Future.successful(Nil)) { case (fResults, (func, arg)) =>
       fResults.flatMap(results => func(arg).map(results :+ _))
+      /* for文を使うとこうなります
+      for {
+        results <- fResults
+        r <- func(arg)
+      } yield results :+ r
+      */
     }
   }
+  /*
+
+   */
 
   /**
     * Futureを返す関数を並列に実行して、それぞれの結果を返しましょう。
@@ -39,10 +48,13 @@ class A2_List_Future extends Q2_List_Future {
   override def parallel[A, B, C](func1: (A) => Future[B], func2: (A) => Future[C]) = {(a1:A, a2:A) =>
     val f1 = func1(a1)
     val f2 = func2(a2)
+    f1.flatMap(b => f2.map(c => (b, c)))
+    /* for文を使うとこうなります
     for {
       b <- f1
       c <- f2
     } yield (b, c)
+    */
   }
 
   /**
