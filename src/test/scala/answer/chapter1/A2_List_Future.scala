@@ -30,10 +30,12 @@ class A2_List_Future extends Q2_List_Future {
   /**
     * Futureを返す関数のListを順番に実行して、それぞれの実行結果をListで返しましょう。
     */
-  override def sequential2[A, B](funcs: List[(A) => Future[B]]) = { args:List[A] =>
-    Future(cross(funcs, args).map{case (func, arg) =>
-      Await.result(func(arg), Duration.Inf)
-    })
+  override def sequential2[A, B](funcs: List[A => Future[B]]) = { (args: List[A]) =>
+    funcs.zip(args).foldLeft(Future(List[B]())) { case (fResults, (func, arg)) =>
+      fResults.flatMap{results =>
+        func(arg).map(r => results :+ r)
+      }
+    }
   }
 
   /**
@@ -52,20 +54,10 @@ class A2_List_Future extends Q2_List_Future {
     * Futureを返す関数のListを並列に実行して、それぞれの実行結果をListで返しましょう。
     */
   override def parallel2[A, B](funcs: List[(A) => Future[B]]) = { args: List[A] =>
-    val results = cross(funcs, args).map{case (func, arg) =>
+    val results = funcs.zip(args).map{case (func, arg) =>
       func(arg)
     }
     Future.sequence(results)
-  }
-
-  /**
-    * List２つを組み合わせてTuple2のListにする
-    */
-  private def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)] = {
-    if (aList.length > bList.length) {
-      throw new IllegalArgumentException("aList.length > bList.length")
-    }
-    aList.zipWithIndex.map{case (a, idx) => (a, bList(idx))}
   }
 
 }
