@@ -28,10 +28,8 @@ class A2_List_Future extends Q2_List_Future {
     * Futureを返す関数のListを順番に実行して、それぞれの実行結果をListで返しましょう。
     */
   override def sequential2[A, B](funcs: List[A => Future[B]]) = { (args: List[A]) =>
-    funcs.zip(args).foldLeft(Future(List[B]())) { case (fResults, (func, arg)) =>
-      fResults.flatMap{results =>
-        func(arg).map(r => results :+ r)
-      }
+    funcs.zip(args).foldLeft[Future[List[B]]](Future.successful(Nil)) { case (fResults, (func, arg)) =>
+      fResults.flatMap(results => func(arg).map(results :+ _))
     }
   }
 
