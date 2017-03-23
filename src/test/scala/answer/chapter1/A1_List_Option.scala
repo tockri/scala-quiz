@@ -18,6 +18,22 @@ class A1_List_Option extends Q1_List_Option {
   override def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)] = aList.zip(bList)
 
   /**
+    * Listのidx番目にelemを挿入したListを返しましょう
+    * idxがListの長さ以上の場合、末尾に追加します。
+    * idxが負の場合、末尾から数えた場所に追加します。
+    * idxが-(Listの長さ)以下の場合、先頭に追加します。
+    */
+  override def insertAt[A](elem: A, idx: Int, list: List[A]) = {
+    val i = if (idx < 0) {
+      list.length + idx + 1
+    } else {
+      idx
+    }
+    val (h, t) = list.splitAt(i)
+    h ::: elem :: t
+  }
+
+  /**
     * 要素のOptionのうち、Someのものだけを返すメソッドを作りましょう
     */
   override def removeOption[A](optList:List[Option[A]]): List[A] = optList.flatten

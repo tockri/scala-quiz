@@ -1,6 +1,6 @@
 package question.chapter1
 
-import org.scalatest.{DiagrammedAssertions, FlatSpec, MustMatchers}
+import org.scalatest.{DiagrammedAssertions, FlatSpec}
 
 /**
   * ListとOptionの練習
@@ -37,6 +37,26 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
     } catch {
       case ex:Exception => {println(ex)}
     }
+  }
+
+  /**
+    * Listのidx番目にelemを挿入したListを返しましょう
+    * idxがListの長さ以上の場合、末尾に追加します。
+    * idxが負の場合、末尾から数えた場所に追加します。
+    * idxが-(Listの長さ)以下の場合、先頭に追加します。
+    */
+  def insertAt[A](elem:A, idx:Int, list:List[A]): List[A]
+
+  "insertAt" should "insert elem at index" in {
+    val l = List('a, 'b, 'c, 'd)
+    assert(insertAt('f, 0, l) == List('f, 'a, 'b, 'c, 'd))
+    assert(insertAt('f, 1, l) == List('a, 'f, 'b, 'c, 'd))
+    assert(insertAt('f, 4, l) == List('a, 'b, 'c, 'd, 'f))
+    assert(insertAt('f, 5, l) == List('a, 'b, 'c, 'd, 'f))
+    assert(insertAt('f, -1, l) == List('a, 'b, 'c, 'd, 'f))
+    assert(insertAt('f, -3, l) == List('a, 'b, 'f, 'c, 'd))
+    assert(insertAt('f, -5, l) == List('f, 'a, 'b, 'c, 'd))
+    assert(insertAt('f, -6, l) == List('f, 'a, 'b, 'c, 'd))
   }
 
 
