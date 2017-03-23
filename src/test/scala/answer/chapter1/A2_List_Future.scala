@@ -2,10 +2,7 @@ package answer.chapter1
 
 import question.chapter1.Q2_List_Future
 
-import scala.collection.mutable.MutableList
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
-import scala.util.Try
+import scala.concurrent.Future
 
 
 /**
