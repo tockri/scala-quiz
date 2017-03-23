@@ -15,12 +15,7 @@ class A1_List_Option extends Q1_List_Option {
   /**
     * 2つのListを結合したListを返しましょう
     */
-  override def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)] = {
-    if (aList.length > bList.length) {
-      throw new IllegalArgumentException("aList.length > bList.length")
-    }
-    aList.zipWithIndex.map{case (a, idx) => (a, bList(idx))}
-  }
+  override def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)] = aList.zip(bList)
 
   /**
     * 要素のOptionのうち、Someのものだけを返すメソッドを作りましょう
