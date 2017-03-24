@@ -1,6 +1,7 @@
 package question.chapter1
 
-import common.{DBFixture, Member}
+import common.DBFixture
+import infra.MemberDao
 import org.scalatest.{DiagrammedAssertions, FlatSpec}
 import scalikejdbc.DB
 
@@ -12,9 +13,9 @@ class Q3_DB extends FlatSpec with DiagrammedAssertions {
   "select" should "select rows" in {
     DBFixture
     DB readOnly { implicit session =>
-      val members = Member.all ()
+      val members = MemberDao.all ()
       println (members)
-      val m = Member.find (1)
+      val m = MemberDao.find (1)
       println (m)
     }
   }
