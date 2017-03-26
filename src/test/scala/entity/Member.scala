@@ -1,4 +1,4 @@
-package model
+package entity
 
 import org.joda.time.DateTime
 
@@ -20,7 +20,12 @@ object MemberId {
   */
 class Member(id:MemberId,
              val name:String,
-             val createdAt:DateTime) extends Entity[MemberId](id) with Created
+             val createdAt:DateTime) extends Entity[MemberId](id) with Created {
+  def copy(id:MemberId = id,
+           name:String = name,
+           createdAt:DateTime = createdAt) =
+    new Member(id, name, createdAt)
+}
 
 object Member {
   def apply(name:String):Member =

@@ -1,6 +1,6 @@
 package infra
 
-import model.{GroupId, GroupMember, Member, MemberId}
+import entity.{GroupId, GroupMember, Member, MemberId}
 import org.joda.time.DateTime
 import scalikejdbc._
 
@@ -35,19 +35,12 @@ object GroupMemberDao  extends SQLSyntaxSupport[GroupMember] {
     new GroupMember(groupId, memberId, now)
   }
 
-  def delete(groupId:GroupId, memberId:MemberId)(implicit session:DBSession):Unit = {
+  def deleteMembers(groupId:GroupId, memberIds:List[MemberId])(implicit session: DBSession):Unit = {
     withSQL {
       QueryDSL.delete.from(this as s)
         .where.eq(s.groupId, groupId.value)
-        .and.eq(s.memberId, memberId.value)
+        .and.in(s.memberId, memberIds.map(_.value))
     }.update().apply()
-  }
-
-  def findByMemberId(memberId:MemberId)(implicit session:DBSession):List[GroupMember] = {
-    withSQL {
-      QueryDSL.select.from(this as s)
-        .where.eq(s.memberId, memberId.value)
-    }.map(rs => entity(rs)).list().apply()
   }
 
   def findByGroupId(groupId:GroupId)(implicit session:DBSession):List[GroupMember] = {

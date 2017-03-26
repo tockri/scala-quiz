@@ -1,6 +1,6 @@
 package infra
 
-import model.{Member, MemberId}
+import entity.{Member, MemberId}
 import org.joda.time.{DateTime, LocalDate}
 import scalikejdbc._
 

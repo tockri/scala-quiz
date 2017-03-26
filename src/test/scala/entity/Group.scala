@@ -1,4 +1,4 @@
-package model
+package entity
 
 import org.joda.time.DateTime
 
@@ -20,7 +20,12 @@ object GroupId {
   */
 class Group(id:GroupId,
             val name: String,
-            val createdAt: DateTime) extends Entity[GroupId](id) with Created
+            val createdAt: DateTime) extends Entity[GroupId](id) with Created {
+  def copy(id:GroupId = id,
+           name: String = name,
+           createdAt: DateTime = createdAt) =
+    new Group(id, name, createdAt)
+}
 
 object Group {
   def apply(name:String):Group = new Group(GroupId.Undef, name, DateTime.now())
@@ -33,7 +38,8 @@ class GroupWithMembers(id:GroupId,
                        name:String,
                        val members:List[Member],
                        createdAt:DateTime)
-  extends Group(id, name, createdAt)
+  extends Group(id, name, createdAt) {
+}
 
 object GroupWithMembers {
   def apply(name:String, members:List[Member]):GroupWithMembers =

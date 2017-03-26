@@ -1,7 +1,7 @@
 package answer.chapter1
 
 import infra.{GroupDao, GroupMemberDao, MemberDao}
-import model._
+import entity._
 import question.chapter1.Q3_DB_Repository
 import scalikejdbc.{DB, DBSession}
 
@@ -72,26 +72,6 @@ class A3_DB_Repository extends Q3_DB_Repository {
         GroupDao.insert(g)
       }
     }
-
-    /**
-      * Groupの参加者を一括で編集します。
-      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
-      * 追加するように実装してください。
-      */
-    def updateGroupMembers(g:Group, members:List[Member])(implicit session:DBSession, context:ExecutionContext):Future[GroupWithMembers] =
-      Future {
-        val memberIds = members.map(_.id)
-        val existingIds = GroupMemberDao.findByGroupId(g.id).map(_.memberId)
-        val toAdd = memberIds.diff(existingIds)
-        val toDelete = existingIds.diff(memberIds)
-        toAdd.foreach { id =>
-          GroupMemberDao.insert(g.id, id)
-        }
-        toDelete.foreach { id =>
-          GroupMemberDao.delete(g.id, id)
-        }
-        GroupWithMembers(g, members)
-      }
   }
 
 
@@ -105,21 +85,43 @@ class A3_DB_Repository extends Q3_DB_Repository {
       * （登録済みでないMemberを指定した場合IllegalArgumentExceptionを投げる）
       * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装します。
       */
-    def createNewGroup(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers] = {
-      DB.futureLocalTx {implicit session =>
+    def createNewGroup(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers] =
+      DB.futureLocalTx{implicit session =>
         require(!g.id.defined)
         // memberはすでに登録済みである必要
         g.members.foreach(m => require(m.id.defined))
         for {
           ng <- GroupRepositoryImpl.save(g)
-          _ <- {
-            Future(g.members.map { m =>
-              GroupMemberDao.insert(ng.id, m.id)
-            })
-          }
+          _ <- updateGroupMemberIds(ng.id, Nil, g.members.map(_.id))
         } yield GroupWithMembers(ng, g.members)
       }
+
+    /**
+      * group_memberを必要な分だけ削除、追加する
+      */
+    private def updateGroupMemberIds(groupId: GroupId, before:List[MemberId], after:List[MemberId])(implicit context:ExecutionContext, session:DBSession): Future[Unit] = Future{
+      after.diff(before).foreach(id => GroupMemberDao.insert(groupId, id))
+      GroupMemberDao.deleteMembers(groupId, before.diff(after))
     }
+
+    /**
+      * Groupを保存しつつ参加者を一括で編集します。
+      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
+      * 追加するように実装してください。
+      * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装します。
+      */
+    def updateGroupWithMembers(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers] =
+      DB.futureLocalTx{implicit session =>
+        require(g.id.defined)
+        // memberはすでに登録済みである必要
+        g.members.foreach(m => require(m.id.defined))
+
+        val existingIds = GroupMemberDao.findByGroupId(g.id).map(_.memberId)
+        for {
+          ng <- GroupRepositoryImpl.save(g)
+          _ <- updateGroupMemberIds(ng.id, existingIds, g.members.map(_.id))
+        } yield GroupWithMembers(ng, g.members)
+      }
   }
 
 

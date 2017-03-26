@@ -2,7 +2,7 @@ package question.chapter1
 
 import common.{DBFixture, FutureSupport}
 import infra.GroupMemberDao
-import model._
+import entity._
 import org.scalatest.{DiagrammedAssertions, FlatSpec}
 import scalikejdbc.{DB, DBSession}
 
@@ -51,12 +51,6 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
       * idが0の場合は新しいGroupをDBに登録し、新しいidを持ったインスタンスを返します。
       */
     def save(g:Group)(implicit session:DBSession, context:ExecutionContext):Future[Group]
-    /**
-      * Groupの参加者を一括で編集します。
-      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
-      * 追加するように実装してください。
-      */
-    def updateGroupMembers(g:Group, members:List[Member])(implicit session:DBSession, context:ExecutionContext):Future[GroupWithMembers]
   }
 
   /**
@@ -70,6 +64,13 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
       * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装します。
       */
     def createNewGroup(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers]
+    /**
+      * Groupを保存しつつ参加者を一括で編集します。
+      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
+      * 追加するように実装してください。
+      * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装します。
+      */
+    def updateGroupWithMembers(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers]
   }
 
   /**
@@ -244,6 +245,7 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
   "GroupRepository.updateMembers" should "update members" in {
     val mr = getMemberRepository()
     val gr = getGroupRepository()
+    var gs = getGroupApplicationService()
     val sorter = (a:GroupMember, b:GroupMember) => a.memberId.value < b.memberId.value
 
     val gm = DB.readOnly { implicit s =>
@@ -260,9 +262,7 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
       ).flatten
     }
     waitFor(Duration("1 sec"))
-    val result = await(DB.futureLocalTx { implicit s =>
-      gr.updateGroupMembers(gm, members)
-    })
+    val result = await(gs.updateGroupWithMembers(GroupWithMembers(gm.copy(name = "updated3"), members)))
     val check = DB.readOnly { implicit s =>
       await(gr.findWithMembers(GroupId(4)))
     }.getOrElse(fail())
@@ -272,6 +272,7 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
     assert(result.id.value == 4)
     assert(result.members == check.members)
     assert(result.members.map(_.name) == check.members.map(_.name))
+    assert(result.name == "updated3")
     assert(result.name == check.name)
     assert(result.members.map(_.id.value) == List(2, 3))
 

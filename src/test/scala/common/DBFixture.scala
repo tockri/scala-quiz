@@ -1,7 +1,7 @@
 package common
 
 import infra.{GroupDao, GroupMemberDao, MemberDao}
-import model.{Group, Member}
+import entity.{Group, Member}
 import org.joda.time.{DateTime, LocalDate}
 import scalikejdbc._
 
@@ -39,8 +39,8 @@ object DBFixture {
       group_id bigint,
       created_at timestamp not null,
       primary key(member_id, group_id),
-      foreign key(member_id) references `member`(id),
-      foreign key(group_id) references `group`(id)
+      foreign key(member_id) references `member`(id) on delete cascade,
+      foreign key(group_id) references `group`(id) on delete cascade
     );
     """).execute.apply()
     val g1 = GroupDao.insert(Group("Backlog team"))
