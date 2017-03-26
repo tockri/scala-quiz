@@ -9,5 +9,6 @@ Scalaで書いてみよう!
     > test-only challenge.chapter1.C1_List_Option
     ```
     のように実行します。
-3. テストケースは `question` パッケージ以下にあります。
+3. IntelliJを使用している場合、編集しているクラスを右クリック→テスト としても実行できます。
+3. 正解かどうかチェックするためにScalatestを利用しています。テストケースは `question` パッケージ以下にあります。
 4. 解答例は `answer` パッケージ以下にあります。
