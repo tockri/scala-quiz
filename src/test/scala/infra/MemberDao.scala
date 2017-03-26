@@ -11,7 +11,7 @@ object MemberDao extends SQLSyntaxSupport[Member] {
 
   override def tableName: String = "member"
 
-  private lazy val s = syntax("m")
+  lazy val s = syntax("m")
 
   def entity(rs: WrappedResultSet):Member =
     new Member(

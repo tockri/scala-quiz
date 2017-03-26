@@ -7,7 +7,7 @@ import scalikejdbc._
 /**
   * groupとmemberの関連テーブルDAO
   */
-object GroupMemberDao  extends SQLSyntaxSupport[GroupMember] {
+object GroupMemberDao extends SQLSyntaxSupport[GroupMember] {
   override val tableName = "group_member"
 
   private lazy val s = syntax("gm")
@@ -36,11 +36,13 @@ object GroupMemberDao  extends SQLSyntaxSupport[GroupMember] {
   }
 
   def deleteMembers(groupId:GroupId, memberIds:List[MemberId])(implicit session: DBSession):Unit = {
-    withSQL {
-      QueryDSL.delete.from(this as s)
-        .where.eq(s.groupId, groupId.value)
-        .and.in(s.memberId, memberIds.map(_.value))
-    }.update().apply()
+    if (memberIds.nonEmpty) {
+      withSQL {
+        QueryDSL.delete.from(this as s)
+          .where.eq(s.groupId, groupId.value)
+          .and.in(s.memberId, memberIds.map(_.value))
+      }.update().apply()
+    }
   }
 
   def findByGroupId(groupId:GroupId)(implicit session:DBSession):List[GroupMember] = {
@@ -50,22 +52,16 @@ object GroupMemberDao  extends SQLSyntaxSupport[GroupMember] {
     }.map(rs => entity(rs)).list().apply()
   }
 
-  def findById(groupId:GroupId, memberId:MemberId)(implicit session:DBSession):Option[GroupMember] = {
-    withSQL {
-      QueryDSL.select.from(this as s)
-        .where.eq(s.groupId, groupId.value)
-        .and.eq(s.memberId, memberId.value)
-    }.map(rs => entity(rs)).single().apply()
-  }
-
   /**
     * groupに所属しているmemberの配列を返す
     */
   def membersInGroup(groupId:GroupId)(implicit session:DBSession):List[Member] = {
-    sql"""
-          SELECT m.* FROM group_member gm
-          INNER JOIN member m ON m.id = gm.member_id
-          WHERE gm.group_id = ${groupId.value}
-      """.map(rs => MemberDao.entity(rs)).list.apply()
+    withSQL {
+      val ms = MemberDao.s
+      QueryDSL.select(ms.*).from(this as s)
+        .innerJoin(MemberDao as ms)
+          .on(ms.id, s.memberId)
+        .where.eq(s.groupId, groupId.value)
+    }.map(rs => MemberDao.entity(rs)).list.apply()
   }
 }

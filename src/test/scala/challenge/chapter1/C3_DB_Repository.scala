@@ -64,9 +64,10 @@ class C3_DB_Repository extends Q3_DB_Repository {
       */
     def createNewGroup(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers] = ???
     /**
-      * Groupの参加者を一括で編集します。
+      * Groupを保存しつつ参加者を一括で編集します。
       * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
       * 追加するように実装してください。
+      * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装します。
       */
     def updateGroupWithMembers(g:GroupWithMembers)(implicit context:ExecutionContext):Future[GroupWithMembers] = ???
   }
