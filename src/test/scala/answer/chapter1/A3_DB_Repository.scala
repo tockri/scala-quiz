@@ -90,7 +90,7 @@ class A3_DB_Repository extends Q3_DB_Repository {
       DB.futureLocalTx {implicit session =>
         require(!g.id.defined)
         // memberはすでに登録済みである必要
-        g.members.foreach(m => require(m.id.value > 0))
+        g.members.foreach(m => require(m.id.defined))
         for {
           ng <- GroupRepositoryImpl.save(g)
           _ <- {
