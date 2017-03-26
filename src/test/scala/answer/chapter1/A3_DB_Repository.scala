@@ -88,8 +88,8 @@ class A3_DB_Repository extends Q3_DB_Repository {
       */
     def createNewGroup(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers] = {
       DB.futureLocalTx {implicit session =>
+        require(!g.id.defined)
         // memberはすでに登録済みである必要
-        require(g.id.value == 0)
         g.members.foreach(m => require(m.id.value > 0))
         for {
           ng <- GroupRepositoryImpl.save(g)
