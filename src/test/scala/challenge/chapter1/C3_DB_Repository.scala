@@ -49,6 +49,12 @@ class C3_DB_Repository extends Q3_DB_Repository {
       * idが0の場合は新しいGroupをDBに登録し、新しいidを持ったインスタンスを返します。
       */
     def save(g:Group)(implicit session:DBSession, context:ExecutionContext):Future[Group] = ???
+    /**
+      * Groupの参加者を一括で編集します。
+      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
+      * 追加するように実装してください。
+      */
+    def updateGroupMembers(g:Group, members:List[Member])(implicit session:DBSession, context:ExecutionContext):Future[GroupWithMembers] = ???
   }
 
   /**
@@ -59,7 +65,8 @@ class C3_DB_Repository extends Q3_DB_Repository {
       * メンバーを指定して新しいグループを作成し、作成したグループを返します。
       * membersの要素のMemberはすでに登録済みでなければなりません。
       * （登録済みでないMemberを指定した場合IllegalArgumentExceptionを投げる）
-      * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装します。
+      * 内部でトランザクションを持つため、DB.futureLocalTx を使用して実装し、
+      * DAOを直接使わずRepositoryを使うようにしてください。
       */
     def createNewGroup(g:GroupWithMembers)(implicit context:ExecutionContext): Future[GroupWithMembers] = ???
   }

@@ -73,6 +73,26 @@ class A3_DB_Repository extends Q3_DB_Repository {
         GroupDao.insert(g)
       }
     }
+
+    /**
+      * Groupの参加者を一括で編集します。
+      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
+      * 追加するように実装してください。
+      */
+    def updateGroupMembers(g:Group, members:List[Member])(implicit session:DBSession, context:ExecutionContext):Future[GroupWithMembers] =
+      Future {
+        val memberIds = members.map(_.id)
+        val existingIds = GroupMemberDao.findByGroupId(g.id).map(_.memberId)
+        val toAdd = memberIds.diff(existingIds)
+        val toDelete = existingIds.diff(memberIds)
+        toAdd.foreach { id =>
+          GroupMemberDao.insert(g.id, id)
+        }
+        toDelete.foreach { id =>
+          GroupMemberDao.delete(g.id, id)
+        }
+        GroupWithMembers(g, members)
+      }
   }
 
 

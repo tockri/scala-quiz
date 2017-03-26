@@ -1,6 +1,7 @@
 package question.chapter1
 
 import common.{DBFixture, FutureSupport}
+import infra.GroupMemberDao
 import model._
 import org.scalatest.{DiagrammedAssertions, FlatSpec}
 import scalikejdbc.{DB, DBSession}
@@ -39,7 +40,6 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
       * 見つからない場合はNoneを返します。
       */
     def find(id:GroupId)(implicit session:DBSession, context:ExecutionContext):Future[Option[Group]]
-
     /**
       * Groupを検索してFutureで返します。
       * SQLのJOINは使わず、MemberDao, GroupDao, GroupMemberDaoを利用してください。
@@ -51,6 +51,12 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
       * idが0の場合は新しいGroupをDBに登録し、新しいidを持ったインスタンスを返します。
       */
     def save(g:Group)(implicit session:DBSession, context:ExecutionContext):Future[Group]
+    /**
+      * Groupの参加者を一括で編集します。
+      * 既存のレコードを全削除して全追加するのではなく、余分なレコードだけ削除して、足りないレコードだけ
+      * 追加するように実装してください。
+      */
+    def updateGroupMembers(g:Group, members:List[Member])(implicit session:DBSession, context:ExecutionContext):Future[GroupWithMembers]
   }
 
   /**
@@ -223,16 +229,58 @@ abstract class Q3_DB_Repository extends FlatSpec with DiagrammedAssertions with 
     val mr = getMemberRepository()
     val gr = getGroupRepository()
     val members = DB.localTx{implicit session =>
-      await(Future.sequence(List(mr.find(MemberId(1)), mr.find(MemberId(2))))).flatMap(m => m)
+      await(Future.sequence(List(mr.find(MemberId(1)), mr.find(MemberId(2))))).flatten
     }
     val ng = await(s.createNewGroup(GroupWithMembers("new group with members", members)))
     val ng2 = DB.localTx{ implicit session =>
       await(gr.findWithMembers(ng.id)).getOrElse(fail())
     }
+    assert(ng.id.value == 4)
     assert(ng.members == ng2.members)
+    assert(ng.members.map(_.id.value) == List(1, 2))
     assert(ng.id == ng2.id)
     assert(ng.name == ng2.name)
+  }
+  "GroupRepository.updateMembers" should "update members" in {
+    val mr = getMemberRepository()
+    val gr = getGroupRepository()
+    val sorter = (a:GroupMember, b:GroupMember) => a.memberId.value < b.memberId.value
 
+    val gm = DB.readOnly { implicit s =>
+      await(gr.findWithMembers(GroupId(4)))
+    }.getOrElse(fail())
+    val gms1 = DB.readOnly{implicit s =>
+      GroupMemberDao.findByGroupId(GroupId(4))
+    }.sortWith(sorter)
+    assert(gm.members.map(_.id.value) == List(1, 2))
+    val members = DB.readOnly{implicit s =>
+      List(
+        await(mr.find(MemberId(2))),
+        await(mr.find(MemberId(3)))
+      ).flatten
+    }
+    waitFor(Duration("1 sec"))
+    val result = await(DB.futureLocalTx { implicit s =>
+      gr.updateGroupMembers(gm, members)
+    })
+    val check = DB.readOnly { implicit s =>
+      await(gr.findWithMembers(GroupId(4)))
+    }.getOrElse(fail())
+    val gms2 = DB.readOnly{implicit s =>
+      GroupMemberDao.findByGroupId(GroupId(4))
+    }.sortWith(sorter)
+    assert(result.id.value == 4)
+    assert(result.members == check.members)
+    assert(result.members.map(_.name) == check.members.map(_.name))
+    assert(result.name == check.name)
+    assert(result.members.map(_.id.value) == List(2, 3))
+
+    assert(gms1(0).memberId.value == 1)
+    assert(gms1(1).memberId.value == 2)
+    assert(gms2(0).memberId.value == 2)
+    assert(gms2(1).memberId.value == 3)
+    assert(gms1(1).createdAt == gms2(0).createdAt, "updateGroupMembersでgroup_memberレコードを全削除してはいけません")
+    assert(gms1(0).createdAt.isBefore(gms2(1).createdAt))
   }
 
 }

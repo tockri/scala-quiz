@@ -17,6 +17,9 @@ trait FutureSupport {
     }
   }
 
+  def waitFor(duration:Duration)(implicit executionContext: ExecutionContext):Unit =
+    await(Future(Thread.sleep(duration.toMillis)))
+
   /**
     * 単純にAwait.resultするだけ
     */

@@ -37,6 +37,7 @@ object DBFixture {
     create table group_member (
       member_id bigint,
       group_id bigint,
+      created_at timestamp not null,
       primary key(member_id, group_id),
       foreign key(member_id) references `member`(id),
       foreign key(group_id) references `group`(id)
