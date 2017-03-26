@@ -1,6 +1,7 @@
 package common
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   *
@@ -15,4 +16,10 @@ trait FutureSupport {
       message
     }
   }
+
+  /**
+    * 単純にAwait.resultするだけ
+    */
+  def await[A](f:Future[A], duration:Duration = Duration.Inf)(implicit executionContext: ExecutionContext):A =
+    Await.result(f, Duration.Inf)
 }

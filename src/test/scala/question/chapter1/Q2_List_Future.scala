@@ -28,7 +28,7 @@ abstract class Q2_List_Future extends FlatSpec with DiagrammedAssertions with Fu
     result.onComplete{t =>
       assert(t.isSuccess)
     }
-    val msg = Await.result(result, Duration("10sec"))
+    val msg = await(result)
     val time = System.currentTimeMillis() - begin
     println(s"[sequential] time: ${time}ms.")
     assert(time >= 2000)
@@ -49,7 +49,7 @@ abstract class Q2_List_Future extends FlatSpec with DiagrammedAssertions with Fu
     future.onComplete{t =>
       assert(t.isSuccess)
     }
-    val msgs = Await.result(future, Duration("10sec"))
+    val msgs = await(future)
     val time = System.currentTimeMillis() - begin
     println(s"[sequential2] time: ${time}ms.")
     assert(time >= 5700)
@@ -70,7 +70,7 @@ abstract class Q2_List_Future extends FlatSpec with DiagrammedAssertions with Fu
     future.onComplete{t =>
       assert(t.isSuccess)
     }
-    val (b, c) = Await.result(future, Duration("10sec"))
+    val (b, c) = await(future)
     val time = System.currentTimeMillis() - begin
     assert(b == "30:func1")
     assert(c == "50:func2")
@@ -92,7 +92,7 @@ abstract class Q2_List_Future extends FlatSpec with DiagrammedAssertions with Fu
     future.onComplete{t =>
       assert(t.isSuccess)
     }
-    val result = Await.result(future, Duration("10sec"))
+    val result = await(future)
     val time = System.currentTimeMillis() - begin
     assert(result == List("1000:func1", "2000:func1", "1500:func1", "1200:func1"))
     println(s"[parallel2] time: ${time}ms.")
