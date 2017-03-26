@@ -55,8 +55,7 @@ class A3_DB_Repository extends Q3_DB_Repository {
       */
     def findWithMembers(id:GroupId)(implicit session:DBSession, context:ExecutionContext):Future[Option[GroupWithMembers]] = Future {
       GroupDao.findById(id).map {g =>
-        val gms = GroupMemberDao.findByGroupId(g.id)
-        val members = MemberDao.findByIdList(gms.map(_.memberId))
+        val members = GroupMemberDao.membersInGroup(g.id)
         new GroupWithMembers(g.id, g.name, members, g.createdAt)
       }
     }

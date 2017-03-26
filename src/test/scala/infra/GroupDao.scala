@@ -1,6 +1,6 @@
 package infra
 
-import model.{Group, GroupId}
+import model.{Group, GroupId, GroupWithMembers}
 import org.joda.time.DateTime
 import scalikejdbc._
 

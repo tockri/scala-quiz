@@ -1,6 +1,6 @@
 package infra
 
-import model.{GroupId, GroupMember, MemberId}
+import model.{GroupId, GroupMember, Member, MemberId}
 import org.joda.time.DateTime
 import scalikejdbc._
 
@@ -63,5 +63,16 @@ object GroupMemberDao  extends SQLSyntaxSupport[GroupMember] {
         .where.eq(s.groupId, groupId.value)
         .and.eq(s.memberId, memberId.value)
     }.map(rs => entity(rs)).single().apply()
+  }
+
+  /**
+    * groupに所属しているmemberの配列を返す
+    */
+  def membersInGroup(groupId:GroupId)(implicit session:DBSession):List[Member] = {
+    sql"""
+          SELECT m.* FROM group_member gm
+          INNER JOIN member m ON m.id = gm.member_id
+          WHERE gm.group_id = ${groupId.value}
+      """.map(rs => MemberDao.entity(rs)).list.apply()
   }
 }
