@@ -9,9 +9,21 @@ import org.scalatest.{DiagrammedAssertions, FlatSpec}
 abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
 
   /**
+    * Listから0番目および偶数番目の要素を取りだして返しましょう
+    */
+  def pickBy2[A](list: List[A]): List[A]
+
+  "pickBy2" should "pick elements in head and even index" in {
+    assert(pickBy2(List(1, 2, 3, 4)) == List(1, 3))
+    assert(pickBy2(List(1, 2, 3, 4, 5)) == List(1, 3, 5))
+    assert(pickBy2(List()) == List())
+    assert(pickBy2(List(1)) == List(1))
+  }
+
+  /**
     * Listを反転させるreverseを、List#reverseを使わず、foldLeftを使って作りましょう
     */
-  def reverse[A](list:List[A]): List[A]
+  def reverse[A](list: List[A]): List[A]
 
   "reverse" should "reverse elements" in {
     assert(reverse(List(1, 2, 3, 4)) == List(4, 3, 2, 1))
@@ -22,7 +34,7 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
   /**
     * 2つのListの要素同士をTupleにしたListを返しましょう
     */
-  def cross[A, B](aList:List[A], bList:List[B]): List[(A, B)]
+  def cross[A, B](aList: List[A], bList: List[B]): List[(A, B)]
 
   "cross" should "combine 2 lists" in {
     val a = List(10, 8, 9, 5)
@@ -35,7 +47,7 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
       cross(c, d)
       fail("should fail")
     } catch {
-      case ex:Exception => {println(ex)}
+      case ex: Exception => println(ex)
     }
   }
 
@@ -45,7 +57,7 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
     * idxが負の場合、末尾から数えた場所に追加します。
     * idxが-(Listの長さ)以下の場合、先頭に追加します。
     */
-  def insertAt[A](elem:A, idx:Int, list:List[A]): List[A]
+  def insertAt[A](elem: A, idx: Int, list: List[A]): List[A]
 
   "insertAt" should "insert elem at index" in {
     val l = List('a, 'b, 'c, 'd)
@@ -63,7 +75,7 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
   /**
     * 要素のOptionのうち、Someのものだけを返すメソッドを作りましょう
     */
-  def removeOption[A](optList:List[Option[A]]): List[A]
+  def removeOption[A](optList: List[Option[A]]): List[A]
 
   /**
     * removeOptionのテスト
@@ -78,7 +90,7 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
   /**
     * 要素のOptionのうち、Someである要素数を返すメソッドを作りましょう
     */
-  def countSome[A](optList:List[Option[A]]):Int
+  def countSome[A](optList: List[Option[A]]): Int
 
   "countSome" should "count Some(_)" in {
     assert(countSome(List(Some("a"), Some("b"), None, None, Some("c"))) == 3)
@@ -91,7 +103,7 @@ abstract class Q1_List_Option extends FlatSpec with DiagrammedAssertions {
   /**
     * 要素のOptionのうち、Someである全ての要素を足し合わせるメソッドを作りましょう
     */
-  def sumSome(optList:List[Option[Int]]):Int
+  def sumSome(optList: List[Option[Int]]): Int
 
   /**
     * addAllのテスト
